@@ -106,7 +106,7 @@ class UserModelTestCase(TestCase):
         self.assertTrue(u3.header_image_url == DEFAULT_HEADER_IMAGE_URL)
         self.assertTrue(u3.bio == "")
         self.assertTrue(u3.location == "")
-
+    #TODO: split into one unsuccessfuil for invalid username and another for invalid email etc
     def test_user_signup_fail(self):
         """Test signing up a new user with invalid credentials."""
 

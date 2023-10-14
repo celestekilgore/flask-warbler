@@ -47,7 +47,7 @@ class UserRoutesTestCase(TestCase):
 
     def test_get_signup(self):
         """ Test user signup GET request."""
-
+    #TODO: test status code too (always do this for integration tests)
         with app.test_client() as client:
             resp = client.get("/signup")
             html = resp.get_data(as_text=True)
@@ -66,14 +66,16 @@ class UserRoutesTestCase(TestCase):
                     "email": "u3@email.com"
                 }
             )
+            #TODO: follow redirect instead
             self.assertEqual(resp.status_code, 302)
             self.assertEqual(resp.location, "/")
 
             u = User.query.filter(User.username == "u3").one_or_none()
+            #TODO: leave bcrypt in model test
             self.assertTrue(bcrypt.check_password_hash(u.password, "password"))
 
             self.assertEqual(u.email, "u3@email.com")
-
+    #TODO: could also test for case where email taken
     def test_register_username_taken(self):
         """Test a signup with existing username."""
 
@@ -103,7 +105,7 @@ class UserRoutesTestCase(TestCase):
                     "password": "password",
                 }
             )
-
+            #TODO: follow redirect, check for 200 instead
             self.assertEqual(resp.status_code, 302)
             self.assertEqual(resp.location, "/")
             self.assertEqual(session.get(CURR_USER_KEY), self.u1_id)
@@ -131,6 +133,7 @@ class UserRoutesTestCase(TestCase):
 
     def test_login_form(self):
         """Test getting the login form."""
+        #TODO: test status code too
 
         with app.test_client() as client:
             resp = client.get("/login")
@@ -142,7 +145,8 @@ class UserRoutesTestCase(TestCase):
         Test viewing another user's follower and following pages
         once logged in.
         """
-
+        #TODO: break into two seperate tests. Also test if users following/being followed.
+        #show up on page
         with app.test_client() as client:
             with client.session_transaction() as sess:
                 sess[CURR_USER_KEY] = self.u1_id

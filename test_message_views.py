@@ -60,7 +60,8 @@ class MessageBaseViewTestCase(TestCase):
 
 class MessageAddViewTestCase(MessageBaseViewTestCase):
     """Test cases for views related to adding messages."""
-
+        #TODO: follow redirec† check for 200 and check for redirect pg
+        # can check that message shows up too
     def test_add_message(self):
         """Test adding a message"""
 
@@ -122,7 +123,7 @@ class MessageDeleteViewTestCase(MessageBaseViewTestCase):
             self.assertIn("Message successfully deleted.", html)
             self.assertFalse(Message.query.filter_by(id=self.m1_id).all())
 
-    def test_loggedout_delete_message(self):
+    def test_logged_out_delete_message(self):
         """Test deleting message while logged out."""
 
         with app.test_client() as c:
