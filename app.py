@@ -361,7 +361,7 @@ def like_message(message_id):
     """Like a message."""
 
     form = g.csrf_form
-    print(request.form['requesting_url'])
+
     if not g.user or not form.validate_on_submit():
         flash("Access unauthorized.", "danger")
         return redirect("/")
@@ -370,10 +370,6 @@ def like_message(message_id):
     g.user.liked_messages.append(message)
 
     db.session.commit()
-    # TODO: Do some research on how to redirect to the requesting page
-    # Could have a hidden form field with endpoint to redirect to.
-    # Research using request object.
-
 
     return redirect(request.form['requesting_url'])
 

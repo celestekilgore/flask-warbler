@@ -1,13 +1,14 @@
+"""Message model tests."""
+
 # run these tests like:
 #
-#    python -m unittest test_user_model.py
+#    python -m unittest test_message_model.py
 
 
 import os
 from unittest import TestCase
-from flask_bcrypt import Bcrypt
 
-from models import db, User, Message
+from models import db, User, Message, Follow, Like
 
 # BEFORE we import our app, let's set an environmental variable
 # to use a different database for tests (we need to do this
@@ -27,43 +28,39 @@ from app import app
 db.drop_all()
 db.create_all()
 
-bcrypt = Bcrypt()
-
 
 class MessageModelTestCase(TestCase):
-    """Tests for Message model."""
-
     def setUp(self):
-        """Make test data"""
+        db.drop_all()
+        db.create_all()
 
-        db.session.rollback()
-        Message.query.delete()
-        User.query.delete()
-
-        u1 = User.signup("u1", "u1@email.com", "password", None)
+        u1 = User.signup("testing", "testing@test.com", "password", None)
+        m1 = Message(text="text")
+        u1.messages.append(m1)
         db.session.commit()
+
         self.u1_id = u1.id
-
-        m1 = Message(text="test1",user_id=self.u1_id)
-
-        db.session.add(m1)
-        db.session.commit()
         self.m1_id = m1.id
 
     def tearDown(self):
-        """Rollback fouled transactions"""
-
         db.session.rollback()
 
     def test_message_model(self):
-        """Test Message model relationships."""
+        u = User.query.get(self.u1_id)
 
+        # User should have 1 message
+        self.assertEqual(len(u.messages), 1)
+        self.assertEqual(u.messages[0].text, "text")
+
+    def test_message_likes(self):
+        u = User.query.get(self.u1_id)
         m1 = Message.query.get(self.m1_id)
+        m2 = Message(text="text-2", user_id=self.u1_id)
 
-        self.assertEqual(m1.user, User.query.get(self.u1_id))
-        self.assertEqual(m1.text,"test1")
-        self.assertTrue(m1.liked_by == [])
+        db.session.add_all([m2])
+        u.liked_messages.append(m1)
+        db.session.commit()
 
-
-
-
+        k = Like.query.filter(Like.user_id == u.id).all()
+        self.assertEqual(len(k), 1)
+        self.assertEqual(k[0].message_id, m1.id)

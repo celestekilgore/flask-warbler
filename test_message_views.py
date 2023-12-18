@@ -5,7 +5,6 @@
 #    FLASK_DEBUG=False python -m unittest test_message_views.py
 
 
-from app import app, CURR_USER_KEY
 import os
 from unittest import TestCase
 
@@ -20,10 +19,7 @@ os.environ['DATABASE_URL'] = "postgresql:///warbler_test"
 
 # Now we can import app
 
-
-app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
-
-# This is a bit of hack, but don't use Flask DebugToolbar
+from app import app, CURR_USER_KEY
 
 app.config['DEBUG_TB_HOSTS'] = ['dont-show-debug-toolbar']
 
@@ -44,27 +40,18 @@ class MessageBaseViewTestCase(TestCase):
         User.query.delete()
 
         u1 = User.signup("u1", "u1@email.com", "password", None)
-        u2 = User.signup("u2", "u2@email.com", "password", None)
         db.session.flush()
 
         m1 = Message(text="m1-text", user_id=u1.id)
-        m2 = Message(text="m2-text", user_id=u2.id)
-        db.session.add_all([m1, m2])
+        db.session.add_all([m1])
         db.session.commit()
 
         self.u1_id = u1.id
         self.m1_id = m1.id
-        self.u2_id = u2.id
-        self.m2_id = m2.id
 
 
 class MessageAddViewTestCase(MessageBaseViewTestCase):
-    """Test cases for views related to adding messages."""
-        #TODO: follow redirec† check for 200 and check for redirect pg
-        # can check that message shows up too
     def test_add_message(self):
-        """Test adding a message"""
-
         # Since we need to change the session to mimic logging in,
         # we need to use the changing-session trick:
         with app.test_client() as c:
@@ -77,83 +64,86 @@ class MessageAddViewTestCase(MessageBaseViewTestCase):
 
             self.assertEqual(resp.status_code, 302)
 
-            self.assertEqual(
-                len(Message.query.filter_by(text="Hello").all()),
-                1
-            )
+            Message.query.filter_by(text="Hello").one()
 
-    def test_logged_out_add_message(self):
-        """Test adding a message while logged out."""
-
+    def test_add_no_session(self):
         with app.test_client() as c:
-
-            # Now, that session setting is saved, so we can have
-            # the rest of ours test
             resp = c.post(
-                "/messages/new",
-                data={"text": "hi"},
-                follow_redirects=True)
+                "/messages/new", data={"text": "Hello"}, follow_redirects=True)
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn("Access unauthorized", str(resp.data))
 
-            html = resp.get_data(as_text=True)
+    def test_add_invalid_user(self):
+        with app.test_client() as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = 987654321  # user does not exist
+
+            resp = c.post(
+                "/messages/new", data={"text": "Hello"}, follow_redirects=True)
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn("Access unauthorized", str(resp.data))
+
+
+class MessageShowViewTestCase(MessageBaseViewTestCase):
+    def test_message_show(self):
+        with app.test_client() as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.u1_id
+
+            resp = c.get(f'/messages/{self.m1_id}')
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn("m1-text", str(resp.data))
+
+    def test_message_show_no_authentication(self):
+        with app.test_client() as c:
+            resp = c.get(f'/messages/{self.m1_id}', follow_redirects=True)
 
             self.assertEqual(resp.status_code, 200)
-            self.assertIn("Access unauthorized", html)
+            self.assertIn("Access unauthorized.", str(resp.data))
+            self.assertIn("Happening?", str(resp.data))
 
-            self.assertEqual(
-                len(Message.query.filter_by(text="hi").all()),
-                0
-            )
+    def test_invalid_message_show(self):
+        with app.test_client() as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.u1_id
+
+            resp = c.get('/messages/987654321')
+
+            self.assertEqual(resp.status_code, 404)
 
 
 class MessageDeleteViewTestCase(MessageBaseViewTestCase):
-    """Test cases for views related to deleting messages."""
-
-    def test_delete_message(self):
-        """Test deleting message while logged in."""
-
+    def test_message_delete(self):
         with app.test_client() as c:
             with c.session_transaction() as sess:
                 sess[CURR_USER_KEY] = self.u1_id
 
             resp = c.post(
                 f"/messages/{self.m1_id}/delete", follow_redirects=True)
-            html = resp.get_data(as_text=True)
-
             self.assertEqual(resp.status_code, 200)
-            self.assertIn("Message successfully deleted.", html)
-            self.assertFalse(Message.query.filter_by(id=self.m1_id).all())
 
-    def test_logged_out_delete_message(self):
-        """Test deleting message while logged out."""
+            m1 = Message.query.get(self.m1_id)
+            self.assertIsNone(m1)
 
+    def test_unauthorized_message_delete(self):
         with app.test_client() as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = 76543 # a user who is not the message's author
 
             resp = c.post(
                 f"/messages/{self.m1_id}/delete", follow_redirects=True)
-            html = resp.get_data(as_text=True)
-
             self.assertEqual(resp.status_code, 200)
-            self.assertIn("Access unauthorized", html)
-            self.assertEqual(
-                len(Message.query.filter_by(id=self.m1_id).all()),
-                1
-            )
+            self.assertIn("Access unauthorized", str(resp.data))
 
-    def test_delete_other_user_message(self):
-        """Test deleting another user's message while logged in."""
+            m1 = Message.query.get(self.m1_id)
+            self.assertIsNotNone(m1)
 
+    def test_message_delete_no_authentication(self):
         with app.test_client() as c:
-            with c.session_transaction() as sess:
-                sess[CURR_USER_KEY] = self.u1_id
-
-            # Try and delete m2 which belongs to u2.
             resp = c.post(
-                f"/messages/{self.m2_id}/delete", follow_redirects=True)
-            html = resp.get_data(as_text=True)
-
+                f"/messages/{self.m1_id}/delete", follow_redirects=True)
             self.assertEqual(resp.status_code, 200)
-            self.assertIn("Access unauthorized.", html)
-            self.assertEqual(
-                len(Message.query.filter_by(id=self.m2_id).all()),
-                1
-            )
+            self.assertIn("Access unauthorized", str(resp.data))
+
+            m1 = Message.query.get(self.m1_id)
+            self.assertIsNotNone(m1)
