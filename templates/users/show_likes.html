@@ -9,29 +9,27 @@
       <a href="/messages/{{ message.id }}" class="message-link"></a>
 
       <a href="/users/{{ message.user.id }}">
-        <img src="{{ message.user.image_url }}"
-             alt="user image"
-             class="timeline-image">
+        <img src="{{ message.user.image_url }}" alt="user image" class="timeline-image">
       </a>
 
       <div class="message-area">
         <a href="/users/{{ message.user.id }}">@{{ message.user.username }}</a>
         <span class="text-muted">
-              {{ message.timestamp.strftime('%d %B %Y') }}
-            </span>
+          {{ message.timestamp.strftime('%d %B %Y') }}
+        </span>
         <p>{{ message.text }}</p>
 
         <div class="d-block">
 
           {% if message in g.user.messages %}
 
-              <div class="like-button">
-                {% if message.liked_by|length > 0 %}
-                  {{ message.liked_by|length }}  <i style = "color:red;" class="bi bi-heart-fill"></i>
-                {% else %}
-                  {{ message.liked_by|length }}  <i class="bi bi-heart"></i>
-                {% endif %}
-              </div>
+          <div class="like-button">
+            {% if message.liked_by|length > 0 %}
+            {{ message.liked_by|length }} <i style="color:red;" class="bi bi-heart-fill"></i>
+            {% else %}
+            {{ message.liked_by|length }} <i class="bi bi-heart"></i>
+            {% endif %}
+          </div>
 
           {% elif message in g.user.liked_messages%}
 
@@ -39,17 +37,18 @@
             {{ g.csrf_form.hidden_tag() }}
             <input hidden name="requesting_url" value="{{ request.url }}">
             <button class="btn btn-default">
-              <div class="like-button">{{ message.liked_by|length }}  <i style = "color:red;" class="bi bi-heart-fill"></i></div>
+              <div class="like-button">{{ message.liked_by|length }} <i style="color:red;" class="bi bi-heart-fill"></i>
+              </div>
             </button>
           </form>
 
           {% else %}
 
-          <form  class="float-start" method="POST" action="/messages/{{ message.id }}/like">
+          <form class="float-start" method="POST" action="/messages/{{ message.id }}/like">
             {{ g.csrf_form.hidden_tag() }}
             <input hidden name="requesting_url" value="{{ request.url }}">
             <button class="btn btn-default">
-              <div class="like-button">{{ message.liked_by|length }}  <i class="bi bi-heart"></i></div>
+              <div class="like-button">{{ message.liked_by|length }} <i class="bi bi-heart"></i></div>
             </button>
           </form>
 
