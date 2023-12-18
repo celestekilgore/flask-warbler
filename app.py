@@ -4,7 +4,6 @@ from dotenv import load_dotenv
 from flask import Flask, render_template, request, flash, redirect, session, g
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
-from werkzeug.exceptions import Unauthorized
 
 from forms import UserAddForm, LoginForm, MessageForm, CsrfForm, EditUserForm
 from models import db, connect_db, User, Message, Like
@@ -216,6 +215,7 @@ def start_following(follow_id):
     """
 
     form = g.csrf_form
+
     if not g.user or not form.validate_on_submit():
         flash("Access unauthorized.", "danger")
         return redirect("/")
@@ -235,6 +235,7 @@ def stop_following(follow_id):
     """
 
     form = g.csrf_form
+
     if not g.user or not form.validate_on_submit():
         flash("Access unauthorized.", "danger")
         return redirect("/")
@@ -247,8 +248,11 @@ def stop_following(follow_id):
 
 
 @app.route('/users/profile', methods=["GET", "POST"])
-def profile():
-    """Update profile for current user."""
+def edit_profile():
+    """Update profile for current user.
+
+    Redirect to user page on success.
+    """
 
     if not g.user:
         flash("Access unauthorized.", "danger")
@@ -297,6 +301,7 @@ def delete_user():
     """
 
     form = g.csrf_form
+
     if not g.user or not form.validate_on_submit():
         flash("Access unauthorized.", "danger")
         return redirect("/")
@@ -398,13 +403,13 @@ def delete_message(message_id):
     Redirect to user page on success.
     """
 
+    form = g.csrf_form
+
     msg = Message.query.get_or_404(message_id)
 
-    form = g.csrf_form
     if not g.user or g.user.id != msg.user.id or not form.validate_on_submit():
         flash("Access unauthorized.", "danger")
         return redirect("/")
-
 
     db.session.delete(msg)
     db.session.commit()
@@ -426,7 +431,6 @@ def homepage():
     """
 
     if g.user:
-
         ids = [user.id for user in g.user.following] + [g.user.id]
 
         messages = (Message
@@ -440,6 +444,13 @@ def homepage():
 
     else:
         return render_template('home-anon.html')
+
+
+@app.errorhandler(404)
+def page_not_found(e):
+    """404 NOT FOUND page."""
+
+    return render_template('404.html'), 404
 
 
 @app.after_request

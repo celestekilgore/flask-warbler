@@ -1,7 +1,7 @@
 /* ====================== General */
 
 body {
-  background-color: #e6ecf0;
+  background-color: #e5e9f7;
 }
 
 body.error-404 {
@@ -23,7 +23,9 @@ body.error-404 {
 /* ======================= Nav */
 
 .navbar {
-  background-color: #fff;
+  /* background-color: #fff; */
+  background-image: url("/static/images/nav-bg.png");
+  background-size: 100% 100%;
   height: 46px;
   border-bottom: 1px solid rgba(0, 0, 0, 0.25);
   margin-bottom: 1rem;
@@ -32,9 +34,10 @@ body.error-404 {
 }
 
 .navbar a {
-  color: #66757f;
+  /* color: #66757f; */
   font-size: 13px;
   font-weight: bold;
+  color: #fff;
 }
 
 .navbar a:hover {
@@ -284,7 +287,9 @@ nav + .container {
 }
 
 .like-button {
-  position: relative;
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
   z-index: 5;
 }
 

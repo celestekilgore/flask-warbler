@@ -66,43 +66,35 @@
               <span class="text-muted">{{ message.timestamp.strftime('%d %B %Y') }}</span>
               <p>{{ message.text }}</p>
 
-            <div class="d-block">
+              <div class="d-block">
 
-              {% if message in g.user.messages %}
+                {% if message in g.user.messages %}
 
-                <span>{{ message.liked_by|length }}
-                  {% if message.liked_by|length == 1 %}
-                    Like
-                  {% else %}
-                    Likes
-                  {% endif %}
-                </span>
+                    <div class="like-button">{{ message.liked_by|length }}  <i style = "color:red;" class="bi bi-heart-fill"></i></div>
 
-              {% elif message in g.user.liked_messages%}
+                {% elif message in g.user.liked_messages%}
 
-              <form method="POST" action="/messages/{{ message.id }}/like/delete">
-                {{ g.csrf_form.hidden_tag() }}
-                <input hidden name="requesting_url" value="{{ request.url }}">
-                <span>{{ message.liked_by|length }}</span>
-                <button class="btn btn-default like-button">
-                  <i class="bi bi-heart-fill fs-3 like-button"></i>
-                </button>
-              </form>
+                <form method="POST" action="/messages/{{ message.id }}/like/delete">
+                  {{ g.csrf_form.hidden_tag() }}
+                  <input hidden name="requesting_url" value="{{ request.url }}">
+                  <button class="btn btn-default">
+                    <div class="like-button">{{ message.liked_by|length }}  <i style = "color:red;" class="bi bi-heart-fill"></i></div>
+                  </button>
+                </form>
 
-              {% else %}
+                {% else %}
 
-              <form method="POST" action="/messages/{{ message.id }}/like">
-                {{ g.csrf_form.hidden_tag() }}
-                <input hidden name="requesting_url" value="{{ request.url }}">
-                <span>{{ message.liked_by|length }}</span>
-                <button class="btn btn-default like-button">
-                  <i class="bi bi-heart fs-3 like-button"></i>
-                </button>
-              </form>
+                <form  class="float-start" method="POST" action="/messages/{{ message.id }}/like">
+                  {{ g.csrf_form.hidden_tag() }}
+                  <input hidden name="requesting_url" value="{{ request.url }}">
+                  <button class="btn btn-default">
+                    <div class="like-button">{{ message.liked_by|length }}  <i class="bi bi-heart"></i></div>
+                  </button>
+                </form>
 
-              {% endif %}
+                {% endif %}
 
-            </div>
+              </div>
 
             </div>
           </li>

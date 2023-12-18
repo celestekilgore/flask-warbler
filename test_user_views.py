@@ -1,22 +1,22 @@
+"""User View tests."""
+
+# run these tests like:
+#
+#    FLASK_DEBUG=False python -m unittest test_user_views.py
+
 import os
+from unittest import TestCase
 
 os.environ["DATABASE_URL"] = 'postgresql:///warbler_test'
-
-from unittest import TestCase
 
 from flask import session
 from flask_bcrypt import Bcrypt
 
 from app import app, CURR_USER_KEY
-from models import db, User, Message
+from models import db, User
 
-# This is a bit of hack, but don't use Flask DebugToolbar
 app.config['DEBUG_TB_HOSTS'] = ['dont-show-debug-toolbar']
-
-# Don't req CSRF for testing
 app.config['WTF_CSRF_ENABLED'] = False
-
-# Make Flask errors be real errors, rather than HTML pages with error info
 app.config['TESTING'] = True
 
 db.drop_all()

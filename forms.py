@@ -36,7 +36,6 @@ class UserAddForm(FlaskForm):
 class EditUserForm(FlaskForm):
     """Form for editing users."""
 
-
     username = StringField(
         'Username',
         validators=[InputRequired(), Length(max=30)],
@@ -63,7 +62,7 @@ class EditUserForm(FlaskForm):
     )
 
     bio = StringField(
-        'Bio',
+        '(Optional) Tell us about yourself',
         validators=[Optional(), Length(max=255)]
     )
 
@@ -71,11 +70,6 @@ class EditUserForm(FlaskForm):
         'Please enter your password to confirm changes',
         validators=[InputRequired(), Length(min=6, max=50)],
     )
-
-
-
-
-
 
 
 class LoginForm(FlaskForm):
@@ -90,6 +84,7 @@ class LoginForm(FlaskForm):
         'Password',
         validators=[InputRequired(), Length(min=6, max=50)],
     )
+
 
 class CsrfForm(FlaskForm):
     """For actions where we want CSRF protection, but don't need any fields."""
