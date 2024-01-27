@@ -31,29 +31,29 @@ Here is an overview of some of the key features
 - Sessions are used to persist the current user. 
 
 ## Local setup instructions
-* Fork and clone this repository
+1. Fork and clone this repository
 
-* Once in your local version of this folder, run the following:
+2. Once in your local version of this folder, run the following:
 ```
 python3 -m venv venv
 source venv/bin/activate
 pip3 install -r requirements.txt
 ```
-* Set up the database:
+3. Set up the database:
 ```
 psql
 CREATE DATABASE warbler;
 (ctrl+D)
 python3 seed.py
 ```
-* Setup environment variables:
+4. Setup environment variables:
 - create a .env file at the root of the project
 - copy and paste the following code into your new .env file
   ```
   SECRET_KEY=secret
   DATABASE_URL=postgresql:///warbler
   ```
-* Run the server:
+5. Run the server:
 ```
 flask run -p 5001
 ```
