@@ -4,7 +4,9 @@ Warbler is a Twitter/X clone that allows users to follow/unfollow other users, l
 
 ## Live Demo
 
-Here is a [demo](https://warbling-warbler.onrender.com/) of Warbler. Feel free to use 'tuckerdiane" and 'password' to log in, or create your own account! This is hosted using a free service so please give the server a few minutes to warm up. 
+Here is a [demo](https://warbling-warbler.onrender.com/) of Warbler. 
+Feel free to use 'tuckerdiane" and 'password' to log in, or create your own account! 
+This is hosted using a free service so please give the server a few minutes to warm up. 
 
 ## Technologies
 
